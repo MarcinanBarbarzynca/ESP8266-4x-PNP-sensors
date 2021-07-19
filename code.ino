@@ -65,7 +65,8 @@ int flaga_dol_wyjscie = 0;
 
 static unsigned int licznik_wejsc = 0;
 static unsigned int pamiec_licznika_wejsc = 0;
-int licznik_wyjsc = 0;
+static unsigned int licznik_wyjsc = 0;
+static unsigned int pamiec_licznika_wyjsc = 0;
 
 //Dla tych dwóch stanów trzeba użyć wspólnego debounca. Tak aby jeden debounc nie pozwalał załączyć się zbyt szybko dwum stanom czujnika.
 
@@ -271,7 +272,8 @@ void loop() {
       Serial.println(url_for_key);
       Serial.println();
 
-      String complete_adress = server_adress + php_target + field_one + sensor_id_number + field_two + licznik_impulsow;
+      String complete_adress_enterance = server_adress + php_target + field_one + sensor_on_enterance + field_two + licznik_wejsc;
+      String complete_adress_exit = server_adress + php_target + field_one + sensor_on_exit + field_two + licznik_wyjsc;
       Serial.println(complete_adress);
       Serial.println();
 
@@ -293,7 +295,7 @@ void loop() {
             Serial.println(payload);
             http.end(); //Zamykanie połączenia a potem ponowne otwieranie w celu przesłania danych.
             if (payload.toInt() == key) {
-              if (http.begin(client, complete_adress)) {
+              if (http.begin(client, complete_adress_enterance)) {
                 Serial.print("[HTTP] GET...\n");
                 // start connection and send HTTP header
                 int httpCode = http.GET();
@@ -315,6 +317,8 @@ void loop() {
                       flip_flop_neta = 0;
                     }
                     Serial.println(payload);
+                    http.begin(client, complete_adress_exit);
+                    http.end();
                   }
                 } else {
                   Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
